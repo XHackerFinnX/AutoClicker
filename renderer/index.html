@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AutoClicker</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <main class="app">
+            <section class="hero">
+                <div>
+                    <p class="eyebrow">AutoClicker</p>
+                    <h1>Макросы и горячие клавиши</h1>
+                    <p>
+                        Простой рабочий интерфейс для настройки, запуска и
+                        остановки макросов.
+                    </p>
+                </div>
+                <button id="newMacro" class="primary">Новый макрос</button>
+            </section>
+
+            <section class="layout">
+                <aside class="panel">
+                    <h2>Макросы</h2>
+                    <div id="macroList" class="macro-list"></div>
+                </aside>
+
+                <section class="panel editor">
+                    <h2>Редактор</h2>
+                    <form id="macroForm">
+                        <input type="hidden" id="macroId" />
+                        <label
+                            >Название
+                            <input
+                                id="name"
+                                required
+                                placeholder="Фарм ресурсов"
+                        /></label>
+                        <label
+                            >Горячая клавиша
+                            <input id="hotkey" placeholder="ctrl+alt+1"
+                        /></label>
+                        <div class="row">
+                            <label
+                                >Повторы
+                                <input
+                                    id="repeat"
+                                    type="number"
+                                    min="1"
+                                    value="1"
+                            /></label>
+                            <label
+                                >Пауза между повторами, мс
+                                <input
+                                    id="intervalMs"
+                                    type="number"
+                                    min="0"
+                                    value="100"
+                            /></label>
+                        </div>
+                        <label
+                            >Действия
+                            <textarea
+                                id="actions"
+                                rows="10"
+                                spellcheck="false"
+                            ></textarea>
+                        </label>
+                        <div class="hint">
+                            JSON-массив: click, doubleClick, press, move, wait.
+                            Например:
+                            [{"type":"click","button":"left"},{"type":"wait","durationMs":500}]
+                        </div>
+                        <div class="actions-bar">
+                            <button type="submit">Сохранить</button>
+                            <button id="runMacro" class="primary" type="button">
+                                Запустить
+                            </button>
+                            <button
+                                id="stopMacro"
+                                class="secondary"
+                                type="button"
+                            >
+                                Остановить
+                            </button>
+                            <button
+                                id="deleteMacro"
+                                class="danger"
+                                type="button"
+                            >
+                                Удалить
+                            </button>
+                        </div>
+                    </form>
+                    <pre id="status">Запуск...</pre>
+                </section>
+            </section>
+        </main>
+        <script src="app.js"></script>
+    </body>
+</html>

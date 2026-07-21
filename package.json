@@ -1,0 +1,22 @@
+{
+    "name": "python-electron-autoclicker",
+    "version": "0.1.0",
+    "description": "Desktop macro autoclicker built with Electron and Python.",
+    "main": "electron/main.js",
+    "scripts": {
+        "start": "electron .",
+        "check:python": "python3 -m py_compile main.py",
+        "check:electron": "node --check electron/main.js && node --check electron/preload.js"
+    },
+    "keywords": [
+        "electron",
+        "python",
+        "autoclicker",
+        "macros"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^31.0.0"
+    }
+}
