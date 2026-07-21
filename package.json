@@ -6,7 +6,11 @@
     "scripts": {
         "start": "electron .",
         "check:python": "python3 -m py_compile main.py",
-        "check:electron": "node --check electron/main.js && node --check electron/preload.js"
+        "check:electron": "node --check electron/main.js && node --check electron/preload.js && node --check renderer/app.js",
+        "test:python": "python3 -m unittest discover -s tests -p \"test_*.py\"",
+        "test": "npm run check:electron && npm run check:python && npm run test:python",
+        "dist": "npx electron-builder",
+        "package": "npx electron-builder --dir"
     },
     "keywords": [
         "electron",
@@ -18,5 +22,28 @@
     "license": "MIT",
     "devDependencies": {
         "electron": "^31.0.0"
+    },
+    "build": {
+        "appId": "com.example.autoclicker",
+        "productName": "Python Electron AutoClicker",
+        "files": [
+            "electron/**/*",
+            "renderer/**/*",
+            "main.py",
+            "requirements.txt",
+            "package.json"
+        ],
+        "directories": {
+            "output": "dist"
+        },
+        "mac": {
+            "target": "dmg"
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "linux": {
+            "target": "AppImage"
+        }
     }
 }

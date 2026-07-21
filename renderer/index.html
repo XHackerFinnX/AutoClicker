@@ -13,17 +13,39 @@
                     <p class="eyebrow">AutoClicker</p>
                     <h1>Макросы и горячие клавиши</h1>
                     <p>
-                        Простой рабочий интерфейс для настройки, запуска и
-                        остановки макросов.
+                        Настройка, запись, импорт/экспорт и безопасный запуск
+                        макросов.
                     </p>
                 </div>
-                <button id="newMacro" class="primary">Новый макрос</button>
+                <div class="actions-bar">
+                    <button id="restartBackend" class="secondary">
+                        Перезапустить backend
+                    </button>
+                    <button id="newMacro" class="primary">Новый макрос</button>
+                </div>
             </section>
 
             <section class="layout">
                 <aside class="panel">
                     <h2>Макросы</h2>
                     <div id="macroList" class="macro-list"></div>
+                    <div class="actions-bar stacked">
+                        <button id="exportSelected" type="button">
+                            Экспорт выбранного
+                        </button>
+                        <button id="exportAll" type="button">
+                            Экспорт всех
+                        </button>
+                        <label class="file-button"
+                            >Импорт JSON<input
+                                id="importMacros"
+                                type="file"
+                                accept="application/json,.json"
+                        /></label>
+                        <button id="resetDemo" class="danger" type="button">
+                            Сбросить демо
+                        </button>
+                    </div>
                 </aside>
 
                 <section class="panel editor">
@@ -31,47 +53,55 @@
                     <form id="macroForm">
                         <input type="hidden" id="macroId" />
                         <label
-                            >Название
-                            <input
+                            >Название<input
                                 id="name"
                                 required
                                 placeholder="Фарм ресурсов"
                         /></label>
                         <label
-                            >Горячая клавиша
-                            <input id="hotkey" placeholder="ctrl+alt+1"
+                            >Горячая клавиша<input
+                                id="hotkey"
+                                placeholder="ctrl+alt+1"
                         /></label>
                         <div class="row">
                             <label
-                                >Повторы
-                                <input
+                                >Повторы<input
                                     id="repeat"
                                     type="number"
                                     min="1"
                                     value="1"
                             /></label>
                             <label
-                                >Пауза между повторами, мс
-                                <input
+                                >Пауза между повторами, мс<input
                                     id="intervalMs"
                                     type="number"
                                     min="0"
                                     value="100"
                             /></label>
                         </div>
-                        <label
-                            >Действия
-                            <textarea
-                                id="actions"
-                                rows="10"
-                                spellcheck="false"
-                            ></textarea>
-                        </label>
-                        <div class="hint">
-                            JSON-массив: click, doubleClick, press, move, wait.
-                            Например:
-                            [{"type":"click","button":"left"},{"type":"wait","durationMs":500}]
-                        </div>
+                        <section class="action-editor">
+                            <div class="section-header">
+                                <div>
+                                    <h3>Действия</h3>
+                                    <p class="hint">
+                                        Перетаскивайте действия, дублируйте и
+                                        редактируйте параметры без ручного JSON.
+                                    </p>
+                                </div>
+                                <button id="addAction" type="button">
+                                    Добавить действие
+                                </button>
+                            </div>
+                            <div id="actionsList" class="actions-list"></div>
+                            <details>
+                                <summary>Предпросмотр JSON</summary>
+                                <textarea
+                                    id="actionsPreview"
+                                    rows="8"
+                                    spellcheck="false"
+                                ></textarea>
+                            </details>
+                        </section>
                         <div class="actions-bar">
                             <button type="submit">Сохранить</button>
                             <button id="runMacro" class="primary" type="button">
@@ -83,6 +113,16 @@
                                 type="button"
                             >
                                 Остановить
+                            </button>
+                            <button id="stopAll" class="danger" type="button">
+                                Остановить всё
+                            </button>
+                            <button
+                                id="recordMacro"
+                                class="secondary"
+                                type="button"
+                            >
+                                Записать
                             </button>
                             <button
                                 id="deleteMacro"

@@ -4,6 +4,23 @@ const { spawn } = require("node:child_process");
 
 let win;
 let python;
+let stdoutBuffer = "";
+const pendingEvents = [];
+
+function sendPythonEvent(message) {
+    if (win && !win.isDestroyed() && !win.webContents.isLoading()) {
+        win.webContents.send("python:event", message);
+        return;
+    }
+    pendingEvents.push(message);
+}
+
+function flushPendingEvents() {
+    if (!win || win.isDestroyed()) return;
+    while (pendingEvents.length) {
+        win.webContents.send("python:event", pendingEvents.shift());
+    }
+}
 
 function createWindow() {
     win = new BrowserWindow({
@@ -20,9 +37,28 @@ function createWindow() {
     });
 
     win.loadFile(path.join(__dirname, "..", "renderer", "index.html"));
+    win.webContents.on("did-finish-load", flushPendingEvents);
+}
+
+function handleStdoutChunk(chunk) {
+    stdoutBuffer += chunk;
+    const lines = stdoutBuffer.split("\n");
+    stdoutBuffer = lines.pop() || "";
+    lines.filter(Boolean).forEach((line) => {
+        try {
+            sendPythonEvent(JSON.parse(line));
+        } catch (error) {
+            sendPythonEvent({
+                event: "error",
+                payload: { message: line },
+            });
+        }
+    });
 }
 
 function startPython() {
+    if (python && !python.killed) return true;
+    stdoutBuffer = "";
     const script = path.join(__dirname, "..", "main.py");
     const executable =
         process.env.PYTHON ||
@@ -30,41 +66,37 @@ function startPython() {
     python = spawn(executable, [script], { cwd: path.join(__dirname, "..") });
 
     python.stdout.setEncoding("utf8");
-    python.stdout.on("data", (chunk) => {
-        chunk
-            .split("\n")
-            .filter(Boolean)
-            .forEach((line) => {
-                try {
-                    win?.webContents.send("python:event", JSON.parse(line));
-                } catch (error) {
-                    win?.webContents.send("python:event", {
-                        event: "error",
-                        payload: { message: line },
-                    });
-                }
-            });
-    });
+    python.stdout.on("data", handleStdoutChunk);
 
     python.stderr.setEncoding("utf8");
     python.stderr.on("data", (chunk) => {
-        win?.webContents.send("python:event", {
+        sendPythonEvent({
             event: "error",
             payload: { message: chunk.trim() },
         });
     });
 
+    python.on("error", (error) => {
+        sendPythonEvent({
+            event: "error",
+            payload: {
+                message: `Не удалось запустить Python backend: ${error.message}`,
+            },
+        });
+    });
+
     python.on("exit", (code) => {
-        win?.webContents.send("python:event", {
+        sendPythonEvent({
             event: "status",
             payload: { message: `Python backend stopped (${code})` },
         });
     });
+    return true;
 }
 
 app.whenReady().then(() => {
-    startPython();
     createWindow();
+    startPython();
 
     app.on("activate", () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -75,6 +107,11 @@ ipcMain.handle("python:command", (_event, command, payload = {}) => {
     if (!python || python.killed) return false;
     python.stdin.write(`${JSON.stringify({ command, payload })}\n`);
     return true;
+});
+
+ipcMain.handle("python:restart", () => {
+    if (python && !python.killed) python.kill();
+    return startPython();
 });
 
 app.on("window-all-closed", () => {

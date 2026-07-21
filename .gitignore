@@ -6,3 +6,4 @@ data/macros.json
 node_modules
 .vscode
 venv
+dist
